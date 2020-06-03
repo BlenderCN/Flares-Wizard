@@ -32,7 +32,7 @@ bl_info = {
 	"description": "Add Lens flares",
 	"author":      "Monaime Zaim (CodeOfArt.com)",
 	"version":     (1, 1, 4),
-	"blender":     (2, 7, 8),
+	"blender":     (2, 82, 0),
 	"wiki_url": "http://codeofart.com/flares-wizard/",
     "tracker_url": "http://codeofart.com/flares-wizard/",
 	"location":    "View 3D > Tool Shelf",
@@ -72,8 +72,7 @@ def Create_BLF_SYS():
     add_custom_functions()        
     
     scn = bpy.context.scene
-    cam = scn.camera
-    target = scn.objects.active
+    target = bpy.context.view_layer.objects.active
     BLF_name = Get_PROP_Name('BLF_SYS')
     
     #main controller
@@ -1367,7 +1366,8 @@ def restore_selection(sel_ob, act_ob):
     bpy.ops.object.select_all(action = 'DESELECT')
     for ob in sel_ob:
         ob.select = True
-    bpy.context.scene.objects.active = act_ob  
+    bpy.context.view_layer.objects.active = act_ob  
+    bpy.context.view_layer.objects.active.select_set(True)
 
 # Delete lens flare
 def deleteFlare():
@@ -1907,9 +1907,9 @@ def load_update_preview(self, context):
         flare = scn.LF_previews
         sel, act = get_sel_ob()
         filename, file_extension = os.path.splitext(flare)
-        if bpy.context.scene.objects.active == None :
+        if bpy.context.view_layer.objects.active == None:
             print("No active object in the scene.")
-        elif bpy.context.scene.objects.active.type == 'CAMERA' :
+        elif bpy.context.view_layer.objects.active.type == 'CAMERA' :
             print("Can't add a lens flare to camera.")
         elif bpy.context.scene.camera == None :
             print("No camera in the scene.")
@@ -2152,9 +2152,9 @@ class CreateLensFlare(Operator):
 
     def execute(self, context):
         sel, act = get_sel_ob()
-        if bpy.context.scene.objects.active == None :
+        if bpy.context.view_layer.objects.active == None :
             self.report({'WARNING'}, "No active object in the scene.")
-        elif bpy.context.scene.objects.active.type == 'CAMERA' :
+        elif bpy.context.view_layer.objects.active.type == 'CAMERA' :
             self.report({'WARNING'}, "Can't add a lens flare to camera.")
         elif bpy.context.scene.camera == None :
             self.report({'WARNING'}, "No camera in the scene.")    
@@ -2279,9 +2279,9 @@ class DuplicateFlare(Operator):
         
     def execute(self, context):
         coll, index = get_flare_group()
-        if bpy.context.scene.objects.active == None :
+        if bpy.context.view_layer.objects.active == None :
             self.report({'WARNING'}, "No active object in the scene.")
-        elif bpy.context.scene.objects.active.type == 'CAMERA' :
+        elif bpy.context.view_layer.objects.active.type == 'CAMERA' :
             self.report({'WARNING'}, "Can't add a lens flare to camera.")
         elif len(coll) == 0:
             self.report({'WARNING'}, "Nothing to duplicate.")                
@@ -2326,9 +2326,9 @@ class LoadFlare(Operator):
         sel, act = get_sel_ob()
         filename, file_extension = os.path.splitext(self.filepath)
         file = os.path.basename(filename)
-        if bpy.context.scene.objects.active == None :
+        if bpy.context.view_layer.objects.active == None :
             self.report({'WARNING'}, "No active object in the scene.")
-        elif bpy.context.scene.objects.active.type == 'CAMERA' :
+        elif bpy.context.view_layer.objects.active.type == 'CAMERA' :
             self.report({'WARNING'}, "Can't add a lens flare to camera.")
         elif bpy.context.scene.camera == None :
             self.report({'WARNING'}, "No camera in the scene.")
@@ -2573,10 +2573,10 @@ class AddFlare(Menu):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
-        layout.label("Add Lens Flare", icon = "NEW")        
+        layout.label(text="Add Lens Flare", icon = "FILE_NEW")        
         layout.separator()
         layout.operator("flare.create_lens_flare", text='New', icon = "PLUS")
-        layout.operator("flare.load", text='Load', icon = "LOAD_FACTORY")
+        layout.operator("flare.load", text='Load', icon = "URL")
         layout.template_icon_view(scn, "LF_previews", show_labels=True)
           
        
@@ -2588,7 +2588,7 @@ class AddElement(Menu):
 
     def draw(self, context):
         layout = self.layout
-        layout.label("Add element", icon = "NEW")        
+        layout.label(text="Add element", icon = "FILE_NEW")        
         layout.separator()
         layout.operator("flare.create_simple_element", text='Simple', icon = "SOLID")
         layout.operator("flare.create_ghost_element", text='Ghosts', icon = "GHOST_ENABLED")
@@ -2604,7 +2604,7 @@ class ElementSettings(Menu):
 
     def draw(self, context):
         layout = self.layout        
-        layout.operator("flare.duplicate_element", icon = "ROTATECOLLECTION")
+        layout.operator("flare.duplicate_element", icon = "AUTO")
         layout.separator()
         layout.operator("flare.show_all_elements", icon = "VISIBLE_IPO_ON")
         layout.operator("flare.hide_all_elements", icon = "VISIBLE_IPO_OFF")
@@ -2618,8 +2618,8 @@ class FlaretSettings(Menu):
 
     def draw(self, context):
         layout = self.layout        
-        layout.operator("flare.duplicate_lens_flare", icon = "ROTATECOLLECTION")        
-        layout.operator("flare.save", icon = "SAVE_COPY")
+        layout.operator("flare.duplicate_lens_flare", icon = "AUTO")        
+        layout.operator("flare.save", icon = "COPY_ID")
 
 # Special menu files shortcuts
 class FlareShortcuts(Menu):
@@ -2629,9 +2629,9 @@ class FlareShortcuts(Menu):
    
     def draw(self, context):
         layout = self.layout                
-        layout.operator("flare.open_elements_folder", icon = 'IMASEL')
-        layout.operator("flare.open_presets_folder", icon = 'FILESEL')
-        layout.operator("flare.open_manual" ,icon = 'QUESTION')
+        layout.operator("flare.open_elements_folder", icon = 'IMAGE_DATA')
+        layout.operator("flare.open_presets_folder", icon = 'FILE')
+        layout.operator("flare.open_manual" ,icon = 'INFO')
                 
 # Special menu cleanup
 class FlareCleanup(Menu):
@@ -2641,7 +2641,7 @@ class FlareCleanup(Menu):
    
     def draw(self, context):
         layout = self.layout
-        layout.operator("flare.fix", text = 'Fix (Experimental)', icon = 'ERROR' )
+        layout.operator("flare.fix", text = 'Fix (Experimental)', icon = 'HELP' )
         layout.separator()        
         layout.operator("flare.remove_unused_images", icon = 'IMAGE_DATA' )        
         layout.operator("flare.remove_unused_meshes", icon = 'OUTLINER_DATA_MESH' )        
@@ -2651,7 +2651,7 @@ class FlareCleanup(Menu):
 class ExtrasPanel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
-    bl_category = "Lens Flares"
+    #bl_category = "Lens Flares"
     bl_label = "Extra options"
     bl_context = "objectmode"
     bl_options = {'DEFAULT_CLOSED'}
@@ -2668,7 +2668,7 @@ class ExtrasPanel(Panel):
 class LensFlaresPanel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
-    bl_category = "Lens Flares"
+    #bl_category = "Lens Flares"
     bl_label = "Lens Flares"
     bl_context = "objectmode"
     
@@ -2685,8 +2685,8 @@ class LensFlaresPanel(Panel):
         row = layout.row()
         row.template_list("SCENE_UL_flare", "coll", scn.flare_group, "coll", scn.flare_group, "index", rows = 2)
         col = row.column(align=True)
-        col.menu("flare.add_flare_menu", icon='ZOOMIN', text="")
-        col.operator("flare.delete_lens_flare", icon='ZOOMOUT', text="")
+        col.menu("flare.add_flare_menu", icon='ZOOM_IN', text="")
+        col.operator("flare.delete_lens_flare", icon='ZOOM_OUT', text="")
         col.menu("flare.flare_settings_menu", icon="DOWNARROW_HLT", text="")
         
         if len(coll)>0:                
@@ -2761,8 +2761,8 @@ class LensFlaresPanel(Panel):
                 row = column_flow.row()
                 row.template_list("SCENE_UL_opstacles", "coll", scn.opstacles_group, "coll", scn.opstacles_group, "index", rows = 2)
                 col = row.column(align=True)
-                col.operator("flare.add_opstacle", icon='ZOOMIN', text="")
-                col.operator("flare.delete_opstacle", icon='ZOOMOUT', text="")
+                col.operator("flare.add_opstacle", icon='ZOOM_IN', text="")
+                col.operator("flare.delete_opstacle", icon='ZOOM_OUT', text="")
                 col = column_flow.column()                
                 col.prop(target, '["ops_distance"]', text = "Distance")                
                 col.prop(target, '["ops_samples"]', text = "Steps")
@@ -2787,7 +2787,7 @@ class LensFlaresPanel(Panel):
 class LensFlaresElements(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
-    bl_category = "Lens Flares"
+    #bl_category = "Lens Flares"
     bl_label = "Lens Flare Elements"
     bl_context = "objectmode"
     @classmethod
@@ -2800,8 +2800,8 @@ class LensFlaresElements(Panel):
         row = layout.row()
         row.template_list("SCENE_UL_element", "coll", scn.element_group, "coll", scn.element_group, "index", rows = 2)
         col = row.column(align=True)
-        col.menu("flare.add_element_menu", icon="ZOOMIN", text="")
-        col.operator("flare.delete_flare_element", icon='ZOOMOUT', text="")
+        col.menu("flare.add_element_menu", icon="ZOOM_IN", text="")
+        col.operator("flare.delete_flare_element", icon='ZOOM_OUT', text="")
         col.menu("flare.element_settings_menu", icon="DOWNARROW_HLT", text="")        
         
         if get_active_element() !="":
@@ -3018,12 +3018,62 @@ class LensFlaresElements(Panel):
                     col.prop(image.image_user, 'frame_duration', text = "Frames")
                     col.prop(image.image_user, 'frame_start', text = "Start frame")
                     col.prop(image.image_user, 'frame_offset', text = "Offset frames")     
-                     
+     
+
+classes = [
+    Flare,
+    FlareGroup,
+    Elements,
+    ElementGroup,
+    Opstacles,
+    OpstaclesGroup,
+    CreateLensFlare,
+    CreateSimpleElement,
+    CreateGhostElement,
+    CreateLensDirtElement,
+    CreateStarElement,
+    CreateBackgroundElement,
+    AddOpstacle,
+    DeleteLensFlare,
+    DeleteFlareElement,
+    DeleteOpstacle,
+    DuplicateElement,
+    DuplicateFlare,
+    SaveFlare,
+    LoadFlare,
+    SelectImage,
+    OpenImage,
+    OpenElementsFolder,
+    OpenPresetsFolder,
+    OpenManual,
+    MoveToLayer,
+    ScanAndFix,
+    ShowAllElements,
+    HideAllElements,
+    SoloSelectedElement,
+    RemoveUnusedImages,
+    RemoveUnusedMeshes,
+    RemoveUnusedMaterials,
+    SCENE_UL_flare,
+    SCENE_UL_element,
+    SCENE_UL_opstacles,
+    AddFlare,
+    AddElement,
+    ElementSettings,
+    FlaretSettings,
+    FlareShortcuts,
+    FlareCleanup,
+    ExtrasPanel,
+    LensFlaresPanel,
+    LensFlaresElements,
+]               
 ######## register  #########    
 
 
 def register():
-    bpy.utils.register_module(__name__)
+    #bpy.utils.register_module(__name__)
+    for cls in classes:
+        bpy.utils.register_class(cls)
     bpy.types.Scene.flare_group = PointerProperty(type=FlareGroup)
     bpy.types.Scene.element_group = PointerProperty(type=ElementGroup)
     bpy.types.Scene.opstacles_group = PointerProperty(type=OpstaclesGroup)
@@ -3044,7 +3094,9 @@ def register():
        
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
+    #bpy.utils.unregister_module(__name__)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
     del bpy.types.Scene.flare_group
     del bpy.types.Scene.element_group
     del bpy.types.Scene.opstacles_group
