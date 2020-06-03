@@ -4,6 +4,6 @@
 Flares Wizard is an add-on for creating realistic lens flares quickly and easily in Blender/Cycles.
 
 # 功能演示
-![](https://github.com/BlenderCN/Flares-Wizard/blob/master/screen.jpg)
+![img](https://github.com/BlenderCN/Flares-Wizard/blob/master/screen.jpg)
 
 [From](https://codeofart.com/flares-wizard/)
