@@ -72,6 +72,7 @@ def Create_BLF_SYS():
     add_custom_functions()        
     
     scn = bpy.context.scene
+    cam = scn.camera
     target = bpy.context.view_layer.objects.active
     BLF_name = Get_PROP_Name('BLF_SYS')
     
@@ -1365,7 +1366,7 @@ def get_sel_ob():
 def restore_selection(sel_ob, act_ob):     
     bpy.ops.object.select_all(action = 'DESELECT')
     for ob in sel_ob:
-        ob.select = True
+        ob.select_set(True)
     bpy.context.view_layer.objects.active = act_ob  
     bpy.context.view_layer.objects.active.select_set(True)
 
@@ -1604,8 +1605,8 @@ def update_lists(self,context):
         bpy.ops.object.select_all(action = 'DESELECT')
         target =  cont.constraints[0].target
         if target != None:
-            target.select = True        
-            obj.active = target
+            target.select_set(True)        
+            bpy.context.view_layer.objects.active = target
             
     return None
 
@@ -1741,7 +1742,7 @@ def update_ghost_element(self, context):
                 scn.objects.link(dupli)
                 dupli[get_active_flare()] = ''
                 dupli['IS_BLF'] = ''
-                dupli.draw_type = 'WIRE'
+                dupli.display_type = 'WIRE'
                 set_ray_visibility(dupli)
                 
                 # drivers
@@ -1832,7 +1833,7 @@ def update_star_element(self, context):
                 scn.objects.link(dupli)
                 dupli[get_active_flare()] = ''
                 dupli['IS_BLF'] = ''
-                dupli.draw_type = 'WIRE'
+                dupli.display_type = 'WIRE'
                 set_ray_visibility(dupli)
                 
                 # drivers
@@ -3074,9 +3075,11 @@ def register():
     #bpy.utils.register_module(__name__)
     for cls in classes:
         bpy.utils.register_class(cls)
+
     bpy.types.Scene.flare_group = PointerProperty(type=FlareGroup)
     bpy.types.Scene.element_group = PointerProperty(type=ElementGroup)
     bpy.types.Scene.opstacles_group = PointerProperty(type=OpstaclesGroup)
+    bpy.types.Object.hide = BoolProperty(default=False)
     bpy.types.Scene.flare_setings = BoolProperty(default=False)
     bpy.types.Scene.pivot_setings = BoolProperty(default=False)
     bpy.types.Scene.material = BoolProperty(default=False)
@@ -3101,6 +3104,7 @@ def unregister():
     del bpy.types.Scene.element_group
     del bpy.types.Scene.opstacles_group
     del bpy.types.Scene.flare_setings
+    del bpy.types.Object.hide
     del bpy.types.Scene.pivot_setings
     del bpy.types.Scene.material
     del bpy.types.Scene.transforms

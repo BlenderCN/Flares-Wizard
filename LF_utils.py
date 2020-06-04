@@ -53,17 +53,17 @@ def add_flare_object(type, name, flare, flare_name, cam, hide = True, hide_sel =
     if type == 'empty':
         bpy.ops.object.empty_add(type = 'SPHERE', radius = 0.03, location = cam.location, rotation = cam.rotation_euler)
     elif type == 'plane':
-        bpy.ops.mesh.primitive_plane_add(radius = 0.15, location=cam.location,rotation = cam.rotation_euler)        
+        bpy.ops.mesh.primitive_plane_add(size = 0.15, location=cam.location,rotation = cam.rotation_euler)        
     ob = bpy.context.object
     if type == 'plane':
-        ob.draw_type = 'WIRE'            
+        ob.display_type = 'WIRE'            
     ob.parent = cam
     ob.name = name
     ob.location = Vector((0, 0, 0))
     ob.rotation_euler = Euler((0.0, 0.0, 0.0), 'XYZ')
     ob[flare] = flare_name
     ob['IS_BLF'] = ''
-    ob.hide = hide
+    ob.hide_set(hide)
     ob.hide_select = hide_sel
     return ob
 def set_ray_visibility(ob):
